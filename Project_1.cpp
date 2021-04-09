@@ -69,11 +69,16 @@ void STU::output_stu_file(map<string,CLA> a)
     cout << this->name << ", ";
     for(map<string,CLA>::iterator i = a.begin();i!=a.end();i++)
     {
-        if(S_score.find(i->first)!=S_score.end()) cout << setprecision(3) << this->S_score[i->first];
+        if(S_score.find(i->first)!=S_score.end()) 
+        {
+            cout<<setprecision(1);
+            double a = this->S_score[i->first];
+            cout <<setiosflags(ios::fixed)<<setprecision(1)<< a;
+        }
         cout << ", ";
     }
     double avg = this->Cal_avg_score();
-    cout << setprecision(3) << avg;
+    cout << avg;
     cout << endl;
 }
 
@@ -93,7 +98,6 @@ int main()
 {
     map<string,STU> all_stu;
     map<string,CLA> all_course;
-
     vector<string> fragments;
     string input;
     while(getline(cin,input))
@@ -113,8 +117,6 @@ int main()
         }
         else
         {
-            CLA::lesson_choose++;
-            CLA::lesson_score+=stod(fragments[2]);
             all_stu[fragments[0]].Ins_score(fragments[1],1.0*stod(fragments[2]));
             if(all_course.find(fragments[1])==all_course.end()) all_course[fragments[1]] = CLA(fragments[1]);
             all_course[fragments[1]].Ins_new(stod(fragments[2]));
@@ -136,9 +138,11 @@ int main()
     cout<<", ";
     for(map<string,CLA>::iterator p = all_course.begin();p!=all_course.end();p++)
     {
-        cout<<", "<<setprecision(3) << p->second.cal_avg();
+        CLA::lesson_choose++;
+        CLA::lesson_score+=p->second.cal_avg();
+        cout<<", "<<p->second.cal_avg();
     }
-    cout<<", "<<setprecision(3)<<CLA::lesson_score/CLA::lesson_choose;
+    cout<<", " << CLA::lesson_score/CLA::lesson_choose;
     cout <<endl;
 }
 
