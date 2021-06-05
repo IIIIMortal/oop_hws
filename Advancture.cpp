@@ -168,6 +168,7 @@ int ROOM::isFullNeighbour()
 // <class> castle function part
 castle::castle(int hardmode)
 {
+    cout<<"castle initializing"<<endl;
     if(hardmode == 1) room_num = 9;
     if(hardmode == 2) room_num = 10;
     if(hardmode == 3) room_num = 15;
@@ -265,6 +266,7 @@ int main()
     cout<<"Welcome to the game of Advancture! Your Mission is to save the Princess."<<endl;
     cout<<"However, there lives a monster in the castle, so you need to avoid meeting it"<<endl;
     cout<<"now, start you own advanture!"<<endl;
+    castle game(1);
     cout<<"Press any key to start!"<<endl;
     getchar();
     cout<<"please input your nickname"<<endl;
