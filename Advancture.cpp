@@ -33,6 +33,28 @@ string map1_name[9] = {"lobby","corridor","kitchen","living room","dining room",
                    2
                  south
 */
+class player;
+class castle;
+class ROOM;
+class player
+{
+private:
+    string P_name;
+    int Position;
+    int with_princess;
+    int steps;
+
+public:
+    player(string name);
+        // initial welcome_message
+    void move(castle *game_map, int direction);
+    int get_Position() {return Position;}
+    int get_princess_status() {return with_princess;}
+    int get_steps() {return steps;}
+    void change_Princess_status(){ with_princess = !with_princess;}
+    string get_nickname(){return P_name;}
+};
+
 class ROOM
 {
 private:
@@ -69,27 +91,12 @@ public:
     ROOM get_room(int index);
     int get_info(int infotype);
     friend int check(ROOM room);
-    friend void player::move(castle game_map, int direction);
+    friend void player::move(castle *game_map, int direction);
 
     ~castle() { delete[] room_queue; }
 };
 
-class player
-{
-private:
-    string P_name;
-    int Position;
-    int with_princess;
-    int steps;
 
-public:
-    player(string name);
-        // initial welcome_message
-    void move(castle game_map, int direction);
-    int get_Position() {return Position;}
-    int get_princess_status() {return with_princess;}
-    int get_steps() {return steps;}
-};
 
 int randomInt(int max)
 {
@@ -102,13 +109,13 @@ int randomInt(int min, int max)
     return a%(max-min)+1+min;
 }
 
-int check(player P, castle C)
+int check(player *P, castle *C)
 {
-    int position = P.get_Position();
-    int bring_Princess = P.get_princess_status();
-    int evil_Position = C.get_info(3);
-    int princess_Position = C.get_info(2);
-    ROOM ent = C.get_room(0);
+    int position = P->get_Position();
+    int bring_Princess = P->get_princess_status();
+    int evil_Position = C->get_info(3);
+    int princess_Position = C->get_info(2);
+    ROOM ent = C->get_room(0);
 
     //checking
     cout<<"you are now checking this room" << endl;
@@ -138,9 +145,10 @@ ROOM::ROOM(int index, string name): room_index(index),room_name(name)
 
 void ROOM::welcome_message()
 {
-    cout<<"welcome to the room: "<< this->room_name <<endl;
-    cout<<"you can do sth here"<<endl;
-    cout<<"now you can go to: ";
+cout<<"W~E~L~C~O~M~E to the room: >>>>>"<< this->room_name <<endl;
+    cout<<"????you can do sth here????"<<endl;
+    cout<<"----->now you can go to: ";
+    
     if(this->room_access[0] != -1) cout<<"north ";
     if(this->room_access[1] != -1) cout<<"east ";
     if(this->room_access[2] != -1) cout<<"south ";
@@ -187,7 +195,7 @@ castle::castle(int hardmode)
         room_queue[i] = ROOM(i, map1_name[i]);
         for( int j = 0; j < 4; j++)
         {
-            room_queue->set_access_room(j,map1_link[j][i]);
+            room_queue[i].set_access_room(j,map1_link[j][i]);
         }
     }
 
@@ -219,8 +227,10 @@ int castle::get_info(int infotype)
         return this->room_evil;
         break;
     default:
+        return -1;
         break;
     }
+
 }
 
 // <class> player function part
@@ -231,9 +241,9 @@ player::player(string name = "default"):P_name(name)
     steps = 0;
 }
 
-void player::move(castle game_map,int direction)
+void player::move(castle* game_map,int direction)
 {
-    Position = game_map.get_room(Position).get_access_roomindex(direction);
+    Position = game_map->get_room(Position).get_access_roomindex(direction);
     steps++;
 }
 
@@ -261,24 +271,91 @@ vector<string> command2string(string line)
     }
     return a;
 }
+
+int Execute(player* P, castle* C, vector<string> splitCommand)
+{
+    if (splitCommand.size() == 0)
+    {
+        cout<< "try:'go north' 'go south' .etc"<<endl;
+        return 0;
+    }
+    else if (splitCommand.size() < 2)
+    {
+        cout<<">> please input your command again!"<<endl;
+        return 0;
+    }
+    if (splitCommand[0] == "go")
+    {
+        if(splitCommand[1] == "north") P->move(C,0);
+        if(splitCommand[1] == "east") P->move(C,1);
+        if(splitCommand[1] == "south") P->move(C,2);
+        if(splitCommand[1] == "west") P->move(C,3);
+        return 1;
+    }
+    return 0;
+}
 int main()
 {
+    srand((unsigned int)(time(NULL)));
     cout<<"Welcome to the game of Advancture! Your Mission is to save the Princess."<<endl;
-    cout<<"However, there lives a monster in the castle, so you need to avoid meeting it"<<endl;
-    cout<<"now, start you own advanture!"<<endl;
-    castle game(1);
-    cout<<"Press any key to start!"<<endl;
+    cout<<"     However, there lives a monster in the castle, so you need to avoid meeting it"<<endl;
+    cout<<"!!now, start you own advanture!!!"<<endl;
+    castle *game = new castle(1);
+    cout<<"Press ENTER to start!"<<endl;
     getchar();
     cout<<"please input your nickname"<<endl;
     
     string nickname;
+    string commandline;
+    vector<string> splitCommand;
     cin>>nickname;
-    player P1(nickname);
+    player *P1 = new player(nickname);
     
     int status = 0;
     while(1)
-    {
+    {   
+        cout << P1->get_nickname()<<" : ";
+        game->get_room(P1->get_Position()).welcome_message();
+        status = check(P1,game);
+        switch(status)
+        {
+        case -1:
+            cout<<"Unfortunitely, you meet the monster! You fight with it bravely but ..."<<endl;
+            cout<<"you totally walked "<<P1->get_steps()<<" steps and finally game over!"<<endl;
+            cout<<"YOU ARE DEAD!!! please reopen the exe and play again"<<endl;
+            return 0;
+            break;
+        case 0:
+            cout<<">> you can now input your command"<<endl;
+            do
+            {
+                getline(cin,commandline);
+                splitCommand = command2string(commandline);
+            }while(!Execute(P1,game,splitCommand));
+            break;
+        case 1:
+            
+            cout<<"ohhhh, you meet the princess! You fall in love with her quickly and decided to bring her out of the castle"<<endl;
+            P1->change_Princess_status();
+            cout<<">> you can now input your command"<<endl;
+            do
+            {
+                getline(cin,commandline);
+                splitCommand = command2string(commandline);
+            }while(!Execute(P1,game,splitCommand));
 
+            break;
+        case 2:
+            cout<<"congratulations! You and the princess live happily ever after"<<endl;
+            return 0;
+            break;
+        default:
+            break;
+        }
+        // game->get_room(P1->get_Position()).welcome_message();
+        // getline(cin,commandline);
+        // splitCommand = command2string(commandline);
+        // Execute(P1,game,splitCommand);
     }
 
 }
