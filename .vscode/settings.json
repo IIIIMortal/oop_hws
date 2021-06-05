@@ -57,7 +57,8 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "cinttypes": "cpp",
-        "bit": "cpp"
+        "bit": "cpp",
+        "*.txx": "cpp"
     },
     "editor.fontFamily": "'YaHei Consolas Hybrid'",
     "code-runner.executorMap": {

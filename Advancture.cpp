@@ -3,6 +3,7 @@
 #include<map>
 #include<vector>
 #include<cstdlib>
+#include<sstream>
 
 using namespace std;
 
@@ -10,7 +11,7 @@ using namespace std;
 #define H2 10
 #define H3 15
 #define no -1
-
+vector<string> empty = {""};
 int map1_link[4][9] = {1,3,4,6,-1,-1,-1,-1,-1,-1,2,-1,4,5,-1,-1,3,7,-1,0,-1,1,2,-1,3,-1,-1,-1,-1,1,7,3,4,-1,8,-1};
 
 //  0   1   2   3   4   5   6   7   8
@@ -65,10 +66,10 @@ public:
         // room_princess comes from randomint, the same as room_evil
 
     ROOM get_randomRoom();
-    ROOM get_entrance();
+    ROOM get_room(int index);
     int get_info(int infotype);
     friend int check(ROOM room);
-    friend void player::move(int direction);
+    friend void player::move(castle game_map, int direction);
 
     ~castle() { delete[] room_queue; }
 };
@@ -76,14 +77,15 @@ public:
 class player
 {
 private:
+    string P_name;
     int Position;
     int with_princess;
     int steps;
 
 public:
-    player();
+    player(string name);
         // initial welcome_message
-    void move(int direction);
+    void move(castle game_map, int direction);
     int get_Position() {return Position;}
     int get_princess_status() {return with_princess;}
     int get_steps() {return steps;}
@@ -106,7 +108,7 @@ int check(player P, castle C)
     int bring_Princess = P.get_princess_status();
     int evil_Position = C.get_info(3);
     int princess_Position = C.get_info(2);
-    ROOM ent = C.get_entrance();
+    ROOM ent = C.get_room(0);
 
     //checking
     cout<<"you are now checking this room" << endl;
@@ -197,9 +199,9 @@ ROOM castle::get_randomRoom()
     return room_queue[tmp];
 }
 
-ROOM castle::get_entrance()
+ROOM castle::get_room(int index)
 {
-    return room_queue[0];
+    return room_queue[index];
 }
 
 int castle::get_info(int infotype)
@@ -220,6 +222,61 @@ int castle::get_info(int infotype)
     }
 }
 
+// <class> player function part
+player::player(string name = "default"):P_name(name)
+{
+    Position = 0;
+    with_princess = 0;
+    steps = 0;
+}
 
+void player::move(castle game_map,int direction)
+{
+    Position = game_map.get_room(Position).get_access_roomindex(direction);
+    steps++;
+}
 
-// <class> castle function part
+string& trim(string &s) 
+{
+    if (s.empty()) 
+    {
+        return s;
+    }
+ 
+    s.erase(0,s.find_first_not_of(" "));
+    s.erase(s.find_last_not_of(" ") + 1);
+    return s;
+}
+
+vector<string> command2string(string line)
+{
+    if ( line.size() <1 ) return empty;
+    istringstream f(line);
+    vector<string> a;
+    string w;
+    while (getline(f, w, ' ') ) {
+        trim(w);
+        a.push_back(w);
+    }
+    return a;
+}
+int main()
+{
+    cout<<"Welcome to the game of Advancture! Your Mission is to save the Princess."<<endl;
+    cout<<"However, there lives a monster in the castle, so you need to avoid meeting it"<<endl;
+    cout<<"now, start you own advanture!"<<endl;
+    cout<<"Press any key to start!"<<endl;
+    getchar();
+    cout<<"please input your nickname"<<endl;
+    
+    string nickname;
+    cin>>nickname;
+    player P1(nickname);
+    
+    int status = 0;
+    while(1)
+    {
+
+    }
+
+}
